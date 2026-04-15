@@ -1,3 +1,4 @@
+# @title
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
@@ -47,13 +48,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_35EBBFAD9229486783C5BA5CDE6C7FFB }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_36F16CCD0E864E81A32414B473523A36 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_3277DDF9458C409DBA08A0929231B0D0 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_6F2BBEAF8D2442FF93F0D3F54F9E8D6D }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_BFB628292BB048588D0EC34B36627A62 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7873DB64C1E14C59AF5FF6B613434565 }}
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
@@ -62,4 +63,3 @@ jobs:
           app-name: 'aravindan-lite-avatar'
           slot-name: 'Production'
           package: .
-          
