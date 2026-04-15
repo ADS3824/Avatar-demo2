@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aravindan Lite - IT Performance Advisor</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2300d4ff'/%3E%3Cpath d='M18 46V18h13c9.4 0 15 5.1 15 14s-5.6 14-15 14H18zm8-7h4.3c5.1 0 8.3-2.7 8.3-7s-3.2-7-8.3-7H26v14z' fill='%230f0f1a'/%3E%3C/svg%3E">
+    <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f0f1a;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .header { text-align: center; margin-bottom: 20px; width: 100%; }
+        .header h1 { font-size: 22px; color: #00d4ff; }
+        .header p { font-size: 13px; color: #888; margin-top: 4px; }
+        .main-container {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 1100px;
+        }
+        .left-panel { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        .right-panel { width: 400px; display: flex; flex-direction: column; gap: 15px; }
+        .card {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #2a2a4a;
+        }
+        .card h3 { font-size: 14px; color: #00d4ff; margin-bottom: 12px; }
+        .avatar-box {
+            width: 100%;
+            height: 340px;
+            background: #0d0d1f;
+            border-radius: 12px;
+            border: 2px solid #00d4ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        #avatarVideo { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .placeholder { text-align: center; color: #444; }
+        .placeholder span { font-size: 50px; }
+        .placeholder p { margin-top: 8px; font-size: 13px; }
+        .status-bar {
+            background: #0d0d1f;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #00d4ff;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+        }
+        .conversation {
+            height: 210px;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        .conversation::-webkit-scrollbar { width: 4px; }
+        .conversation::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 2px; }
+        .msg-q { color: #f39c12; margin-bottom: 4px; }
+        .msg-a { color: #2ecc71; margin-bottom: 12px; }
+
+        /* Buttons */
+        button {
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+            padding: 9px 12px;
+        }
+        button:hover { opacity: 0.85; }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-primary { background: #00d4ff; color: #0f0f1a; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-success { background: #2ecc71; color: #0f0f1a; }
+        .btn-warn { background: #f39c12; color: #0f0f1a; }
+        .btn-full { width: 100%; display: block; margin-bottom: 8px; }
+        .btn-record { background: #e74c3c; color: white; }
+        .btn-record.recording { animation: pulse 1s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+        /* Input Mode Tabs */
+        .mode-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+        .mode-tab {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            border: 2px solid #2a2a4a;
+            background: #0d0d1f;
+            color: #888;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .mode-tab:hover { border-color: #00d4ff; color: #00d4ff; }
+        .mode-tab.active { border-color: #00d4ff; color: #00d4ff; background: #0d1f2e; }
+        .mode-panel { display: none; }
+        .mode-panel.active { display: block; }
+
+        /* Inputs */
+        input[type="text"], textarea {
+            width: 100%;
+            background: #0d0d1f;
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: white;
+            font-size: 13px;
+            font-family: 'Segoe UI', sans-serif;
+            resize: vertical;
+        }
+        input[type="text"] { margin-bottom: 10px; }
+        input[type="text"]:focus, textarea:focus { outline: none; border-color: #00d4ff; }
+        input[type="text"]::placeholder, textarea::placeholder { color: #444; }
+        textarea { margin-bottom: 10px; min-height: 80px; }
+
+        /* Ask Directly row */
+        .ask-row { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+        .ask-row input { margin-bottom: 0; flex: 1; }
+        .ask-btn-group { display: flex; gap: 6px; flex-shrink: 0; }
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            padding: 0;
+        }
+
+        /* Status indicators */
+        .indicator {
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+            flex: 0 0 auto;
+        }
+        .ind-on { background: #2ecc71; }
+        .ind-off { background: #e74c3c; }
+        .ind-wait { background: #f39c12; animation: pulse 1s infinite; }
+
+        .hint-text { font-size: 11px; color: #555; margin-top: 8px; line-height: 1.5; }
+        .hint-text strong { color: #f39c12; }
+
+        @media (max-width: 900px) {
+            .main-container { flex-direction: column; }
+            .right-panel { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Aravindan Lite</h1>
+        <p>L&T PES | IT Performance Planning Workshop 2026</p>
+    </div>
+
+    <div class="main-container">
+        <!-- LEFT PANEL -->
+        <div class="left-panel">
+            <div class="avatar-box">
+                <video id="avatarVideo" autoplay playsinline></video>
+                <div class="placeholder" id="placeholder">
+                    <span>🤖</span>
+                    <p>Connect avatar to start</p>
+                </div>
+            </div>
+
+            <div class="status-bar" id="status"></div>
+
+            <div class="card">
+                <h3>Conversation</h3>
+                <div class="conversation" id="conversation">
+                    <p id="conversationEmpty" style="color:#444;text-align:center;margin-top:60px">
+                        Conversation will appear here...
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="right-panel">
+
+            <!-- 1. Avatar Controls -->
+            <div class="card">
+                <h3>🤖 Avatar Controls</h3>
+                <button class="btn-primary btn-full" id="connectAvatarBtn" onclick="connectAvatar()">Connect Avatar</button>
+                <button class="btn-danger btn-full" id="disconnectAvatarBtn" onclick="disconnectAvatar()" disabled>Disconnect Avatar</button>
+            </div>
+
+            <!-- 2. Input Mode -->
+            <div class="card">
+                <h3>🎧 Input Mode</h3>
+                <div class="mode-tabs">
+                    <div class="mode-tab active" id="tabMic" onclick="switchMode('mic')">🎙️ Microphone</div>
+                    <div class="mode-tab" id="tabTeams" onclick="switchMode('teams')">👥 Teams</div>
+                </div>
+
+                <!-- Microphone Panel -->
+                <div class="mode-panel active" id="panelMic">
+                    <button class="btn-record btn-full" id="micListenBtn" onclick="toggleMicListening()" disabled>
+                        🎙️ Start Listening
+                    </button>
+                    <p class="hint-text">
+                        Say <strong id="wakeWordHintMic">Aravindan Sir</strong> followed by your question. The avatar will answer only when the wake word is detected.
+                    </p>
+                </div>
+
+                <!-- Teams Panel -->
+                <div class="mode-panel" id="panelTeams">
+                    <input type="text" id="meetingLink" placeholder="Paste Teams meeting link here..."/>
+                    <button class="btn-success btn-full" id="joinBtn" onclick="joinTeamsMeeting()" disabled>Join Meeting</button>
+                    <button class="btn-danger btn-full" id="leaveBtn" onclick="leaveTeamsMeeting()" disabled>Leave Meeting</button>
+                    <button class="btn-record btn-full" id="listenBtn" onclick="toggleTeamsListening()" disabled>
+                        👂 Start Listening
+                    </button>
+                    <p class="hint-text">
+                        Say <strong id="wakeWordHintTeams">Aravindan Sir</strong> followed by your question in the meeting.
+                    </p>
+                </div>
+            </div>
+
+            <!-- 3. Ask Directly -->
+            <div class="card">
+                <h3>💬 Ask Directly</h3>
+                <div class="ask-row">
+                    <input type="text" id="testQuestion" placeholder="Type a question..."/>
+                    <div class="ask-btn-group">
+                        <button class="btn-primary icon-btn" title="Get Answer (text only)" onclick="testQuestionTextOnly()">💬</button>
+                        <button class="btn-warn icon-btn" title="Ask & Speak (avatar speaks)" onclick="testQuestionAndSpeak()">🔊</button>
+                    </div>
+                </div>
+                <p class="hint-text">💬 Get answer in conversation &nbsp;|&nbsp; 🔊 Avatar speaks the answer</p>
+            </div>
+
+            <!-- 4. Speak Text -->
+            <div class="card">
+                <h3>📢 Speak Text</h3>
+                <textarea id="speakTextArea" placeholder="Paste any content here and the avatar will read it aloud..."></textarea>
+                <button class="btn-warn btn-full" id="speakTextBtn" onclick="speakPastedText()" disabled>🔊 Speak</button>
+            </div>
+
+            <!-- 5. Status -->
+            <div class="card">
+                <h3>📊 Status</h3>
+                <p style="font-size:12px;color:#888;line-height:2.2">
+                    Avatar: <span id="avatarStatus" style="color:#e74c3c">Disconnected</span><br>
+                    Mode: <span id="modeStatus" style="color:#888">—</span><br>
+                    Teams: <span id="teamsStatus" style="color:#e74c3c">Not joined</span><br>
+                    Listening: <span id="listenStatus" style="color:#e74c3c">Off</span>
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="/app.bundle.js" defer></script>
+</body>
+</html>
